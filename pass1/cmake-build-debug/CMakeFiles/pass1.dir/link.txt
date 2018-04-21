@@ -1,0 +1,1 @@
+/usr/bin/c++  -g   CMakeFiles/pass1.dir/main.cpp.o CMakeFiles/pass1.dir/File.cpp.o  -o pass1 
