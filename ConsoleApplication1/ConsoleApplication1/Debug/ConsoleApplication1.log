@@ -1,0 +1,8 @@
+﻿  ConsoleApplication1.cpp
+c:\users\abdo\git\consoleapplication1\consoleapplication1\consoleapplication1.cpp(124): warning C4018: '<': signed/unsigned mismatch
+c:\users\abdo\git\consoleapplication1\consoleapplication1\consoleapplication1.cpp(154): warning C4018: '<': signed/unsigned mismatch
+c:\users\abdo\git\consoleapplication1\consoleapplication1\consoleapplication1.cpp(160): warning C4018: '<': signed/unsigned mismatch
+c:\users\abdo\git\consoleapplication1\consoleapplication1\consoleapplication1.cpp(166): warning C4018: '<': signed/unsigned mismatch
+c:\users\abdo\git\consoleapplication1\consoleapplication1\consoleapplication1.cpp(383): warning C4018: '<': signed/unsigned mismatch
+  ConsoleApplication1.vcxproj -> C:\Users\ABDO\git\ConsoleApplication1\Debug\ConsoleApplication1.exe
+  ConsoleApplication1.vcxproj -> C:\Users\ABDO\git\ConsoleApplication1\Debug\ConsoleApplication1.pdb (Full PDB)
