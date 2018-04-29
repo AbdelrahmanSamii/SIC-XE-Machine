@@ -602,6 +602,7 @@ int main() {
             }
         } else {
             commentCounter++;
+            std::cout << std::left << addressCode.at(i-1);
             std::cout << CommentLine.at(i);
         }
         it = error_messages.find(i - commentCounter);
