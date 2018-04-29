@@ -213,7 +213,7 @@ if ((mlines->at(index)[1]).compare("START") == 0 || (mlines->at(index)[1]).compa
                         if (flag=="C"||flag=="X"){
                             return;
                         }
-				}else if if (mlines->at (index)[1]=="WORD"){
+				}else if  (mlines->at (index)[1]=="WORD"){
 				    				int temp =0;
 				     std::istringstream (mlines->at(index)[2] ) >> temp;
 				if(temp==(int)temp){
@@ -558,6 +558,26 @@ temp.append(result);
    addressCode->at(i).append(finalCode);
 
 }
+	std::map<int,std::string>::iterator it;
+	for (int i = 0 ; i < addressCode.size() ; i++ ){
+		std::cout.width(20); std::cout << std::left << i+1 ;
+		std::cout.width(20); std::cout << std::left << addressCode.at(i) ;
+		it = CommentLine.find(i);
+		if (it == CommentLine.end()){
+			for (int j = 0 ; j < 3 ; j++)
+			{
+				std::cout.width(20); std::cout << std::left << lines.at(i)[j] ;
+			}
+		} else{
+			std::cout << CommentLine.at(i) ;
+		}
+		it = error_messages.find(i);
+		if (it != error_messages.end()){
+			std::cout <<'\n' ;
+			std::cout.width(50); std::cout << std::right << error_messages.at(i) ;
+		}
+		std::cout <<'\n' ;
+	}
 
 
 	    return 0;
