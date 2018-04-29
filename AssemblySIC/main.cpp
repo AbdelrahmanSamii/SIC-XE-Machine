@@ -23,6 +23,10 @@ int getValue(string x);
 
 int getLength(string x);
 
+struct rr {
+    std::map<int, std::string[3]> lines;
+    std::map<int, std::string> commentLine;
+};
 struct operation {
 public:
     operation(string n, int b, bool r, bool storageD, int parametersNum, bool isRegparameters) {
@@ -411,10 +415,9 @@ check_variables(int endIndex, std::map<int, std::string[3]> lines, std::map<int,
             }
         }
     }
-    std::cout << "Hello, World!" << std::endl;
-};
+}
 
-void fileLoader(std::string path, std::map<int, std::string[3]> lines, std::map<int, std::string> CommentLine) {
+rr fileLoader(std::string path, std::map<int, std::string[3]> lines, std::map<int, std::string> CommentLine) {
     std::map<int, std::string> error_messages;
     std::ifstream file(path.c_str());
     std::string line;
@@ -422,6 +425,7 @@ void fileLoader(std::string path, std::map<int, std::string[3]> lines, std::map<
     while (std::getline(file, line)) {
         if (line.size() == 0 || line.find(".") != -1) {
             CommentLine[index] = line;
+            continue;
         } else {
             int pos, j = 2;
             for (int i = 0; i < 3; ++i) {
@@ -439,9 +443,14 @@ void fileLoader(std::string path, std::map<int, std::string[3]> lines, std::map<
         }
         index++;
     }
-    std::cout << "Hello, World!" << std::endl;
-    check_variables(11, lines, error_messages);
-    cout<< "1";
+
+    rr maps;
+    maps.lines = lines;
+    maps.commentLine = CommentLine;
+    cout<<"size before"<<lines.size();
+    return maps;
+
+//    check_variables(11, lines, error_messages);
 }
 
 
@@ -449,43 +458,45 @@ int main() {
     std::map<int, std::string[3]> lines;
     std::map<int, std::string> error_messages;
     std::map<int, std::string> CommentLine;
-    fileLoader("test.txt", lines, CommentLine);
+    rr maps = fileLoader("E:\\CSED 4\\SystemProgramming\\CLion\\mytest.txt", lines, CommentLine);
+
+    lines = maps.lines;
+    CommentLine = maps.commentLine;
+
+    cout<<"size after"<<lines.size();
+
     //check_variables(11,lines,error_messages);
     string s = "";
     //map<int, string[3]> lines;
     map<int, string> errs;
-    int i = 0;
-    while (s != "m") {
-        cout << i + "             label:";
-        cin >> s;
-        lines[i][0] = s;
-        cout << i + "            operation:";
-        cin >> s;
-        lines[i][1] = s;
-        cout << i + "              parameter:";
-        cin >> s;
-        lines[i][2] = s;
-        cout << "enter \"show\" if show ?";
-        cin >> s;
-        i++;
-    }
+    /*   int i = 0;
+       while (s != "m") {
+           cout << i + "             label:";
+           cin >> s;
+           lines[i][0] = s;
+           cout << i + "            operation:";
+           cin >> s;
+           lines[i][1] = s;
+           cout << i + "              parameter:";
+           cin >> s;
+           lines[i][2] = s;
+           cout << "enter \"show\" if show ?";
+           cin >> s;
+           i++;
+       }*/
     MyClass cls;
+    cls.operate(&lines, &error_messages);
 
-    cls.operate(&lines, &errs);
-    for (int e = 0; e < errs.size(); e++) {
-        cout << errs.at(e);
-    }
-    cin >> s;
-    cout<< "abdo done";
+    //  cin >> s;
     //  string x [8][3]= {{"Prbn01","START","1000"},{"0","LDA","BETA"},{"0","MUL","GAMMA"},{"0","STA","ALPHA"},{"ALPHA","RESW","1"},{"BETA","WORD","25"},{"GAMMA","WORD","4"},{"0","END","Prbn01"}};
-    int sizeX = sizeof(lines);
-    int sizeY = 3;
+    int sizeX = lines.size();
+  //  int sizeY = 3;
     int AddressCode = 0;
     std::map<int, std::string> addressCode;
-    cout << AddressCode << endl;
     for (int i = 0; i < sizeX; i++) {
         if (error_messages[i] == "") {
             string op = lines[i][1];
+            cout<<"operation"<<op;
             if (op == "START") {
                 string temp = lines[i][2];
                 if (temp.size() > 4) {
@@ -528,7 +539,6 @@ int main() {
 
                 AddressCode += flag;
 
-
             } else if (op == "ADDR" || op == "MULR" || op == "DIVR" || op == "SUBR" || op == "COMPR") {
                 int flagtwo = 0;
                 for (int l = 0; l < sizeX; l++) {
@@ -564,34 +574,39 @@ int main() {
         addressCode[i].append(finalCode);
 
     }
-    cout << "nasser";
-    std::map<int, std::string>::iterator it;
-    int commentCounter = 0;
-    for (int i = 0; i < addressCode.size(); i++) {
-        std::cout.width(20);
-        std::cout << std::left << i + 1;
-        std::cout.width(20);
-        std::cout << std::left << addressCode.at(i);
-        it = CommentLine.find(i);
-        if (it == CommentLine.end()) {
-            for (int j = 0; j < 3; j++) {
-                std::cout.width(20);
-                std::cout << std::left << lines.at(i - commentCounter)[j];
-            }
-        } else {
-            commentCounter++;
-            std::cout << CommentLine.at(i);
-        }
-        it = error_messages.find(i - commentCounter);
-        if (it != error_messages.end()) {
-            std::cout << '\n';
-            std::cout.width(50);
-            std::cout << std::right << error_messages.at(i - commentCounter);
-        }
-        std::cout << '\n';
-    }
-    cout << "sami";
 
+    for (int i = 0; i < addressCode.size(); i++){
+        cout << addressCode[i] << endl;
+    }
+
+//    std::map<int, std::string>::iterator it;
+//    int commentCounter = 0;
+//    for (int i = 0; i < addressCode.size(); i++) {
+//        std::cout.width(20);
+//        std::cout << std::left << i + 1;
+//        std::cout.width(20);
+//        std::cout << std::left << addressCode.at(i);
+//        it = CommentLine.find(i);
+//        if (it == CommentLine.end()) {
+//            for (int j = 0; j < 3; j++) {
+//                std::cout.width(20);
+//                std::cout << std::left << lines.at(i - commentCounter)[j];
+//            }
+//        } else {
+//            commentCounter++;
+//            std::cout << CommentLine.at(i);
+//        }
+//        it = error_messages.find(i - commentCounter);
+//        if (it != error_messages.end()) {
+//            std::cout << '\n';
+//            std::cout.width(50);
+//            std::cout << std::right << error_messages.at(i - commentCounter);
+//        }
+//        std::cout << '\n';
+//    }
+//    cout << "sami";
+
+    cin >> s;
     return 0;
 }
 
