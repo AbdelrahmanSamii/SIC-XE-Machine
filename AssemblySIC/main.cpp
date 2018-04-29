@@ -12,6 +12,8 @@
 #include <stdlib.h>
 
 #define max_fixed_size 100
+#define underline "\033[4m"
+#define noUnderline "\033[0m"
 using namespace std;
 
 char *tocharArray(string x);
@@ -422,9 +424,12 @@ rr fileLoader(std::string path, std::map<int, std::string[3]> lines, std::map<in
     std::ifstream file(path.c_str());
     std::string line;
     int index = 0;
+    int g = 0 ;
     while (std::getline(file, line)) {
         if (line.size() == 0 || line.find(".") != -1) {
-            CommentLine[index] = line;
+
+            CommentLine[index + g] = line;
+            g++;
             continue;
         } else {
             int pos, j = 2;
@@ -458,7 +463,7 @@ int main() {
     std::map<int, std::string[3]> lines;
     std::map<int, std::string> error_messages;
     std::map<int, std::string> CommentLine;
-    rr maps = fileLoader("E:\\CSED 4\\SystemProgramming\\CLion\\mytest.txt", lines, CommentLine);
+    rr maps = fileLoader("/home/sami/CLionProjects/untitled4/mytest.txt", lines, CommentLine);
 
     lines = maps.lines;
     CommentLine = maps.commentLine;
@@ -488,7 +493,7 @@ int main() {
     cls.operate(&lines, &error_messages);
 
     //  cin >> s;
-    //  string x [8][3]= {{"Prbn01","START","1000"},{"0","LDA","BETA"},{"0","MUL","GAMMA"},{"0","STA","ALPHA"},{"ALPHA","RESW","1"},{"BETA","WORD","25"},{"GAMMA","WORD","4"},{"0","END","Prbn01"}};
+     //  string x [8][3]= {{"Prbn01","START","1000"},{"0","LDA","BETA"},{"0","MUL","GAMMA"},{"0","STA","ALPHA"},{"ALPHA","RESW","1"},{"BETA","WORD","25"},{"GAMMA","WORD","4"},{"0","END","Prbn01"}};
     int sizeX = lines.size();
   //  int sizeY = 3;
     int AddressCode = 0;
@@ -579,34 +584,36 @@ int main() {
         cout << addressCode[i] << endl;
     }
 
-//    std::map<int, std::string>::iterator it;
-//    int commentCounter = 0;
-//    for (int i = 0; i < addressCode.size(); i++) {
-//        std::cout.width(20);
-//        std::cout << std::left << i + 1;
-//        std::cout.width(20);
-//        std::cout << std::left << addressCode.at(i);
-//        it = CommentLine.find(i);
-//        if (it == CommentLine.end()) {
-//            for (int j = 0; j < 3; j++) {
-//                std::cout.width(20);
-//                std::cout << std::left << lines.at(i - commentCounter)[j];
-//            }
-//        } else {
-//            commentCounter++;
-//            std::cout << CommentLine.at(i);
-//        }
-//        it = error_messages.find(i - commentCounter);
-//        if (it != error_messages.end()) {
-//            std::cout << '\n';
-//            std::cout.width(50);
-//            std::cout << std::right << error_messages.at(i - commentCounter);
-//        }
-//        std::cout << '\n';
-//    }
-//    cout << "sami";
+    std::map<int, std::string>::iterator it;
+    std::cout <<underline<< "Output" << std::endl;
+    std::cout << noUnderline<<"Line no.            Adress              Label               Mnemonic            Operands"<< std::endl;
+    std::cout << "                                                            Op-code"<< std::endl ;
+    int commentCounter = 0;
+    for (int i = 0; i < addressCode.size() + commentCounter; i++) {
+        std::cout.width(20);
+        std::cout << std::left << i + 1;
+        std::cout.width(20);
+        std::cout << std::left << addressCode.at(i);
+        it = CommentLine.find(i);
+        if (it == CommentLine.end()) {
+            for (int j = 0; j < 3; j++) {
+                std::cout.width(20);
+                std::cout << std::left << lines.at(i - commentCounter)[j];
+            }
+        } else {
+            commentCounter++;
+            std::cout << CommentLine.at(i);
+        }
+        it = error_messages.find(i - commentCounter);
+        if (it != error_messages.end()) {
+            std::cout << '\n';
+            std::cout.width(50);
+            std::cout << std::right << error_messages.at(i - commentCounter);
+        }
+        std::cout << '\n';
+    }
+    cout << "sami";
 
-    cin >> s;
     return 0;
 }
 
@@ -648,3 +655,4 @@ char *tocharArray(string x) {
     return *c;
 
 }
+
