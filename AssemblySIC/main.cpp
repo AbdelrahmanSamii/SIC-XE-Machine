@@ -524,38 +524,38 @@ int main() {
             } else if (op == "END") {
 
             } else if (op == "ADD" || op == "MUL" || op == "DIV" || op == "SUB" || op == "COMP") {
-                int flag = 0;
-                for (int j = 0; j < sizeX; j++) {
-                    if (lines[j][0] == lines[i][2]) {
-                        if (lines[j][1] == "WORD") {
-                            flag = 3;
-                        } else if (lines[j][1] == "BYTE") {
-                            flag = getLength(lines[j][2]);
-                        }
-                    } else {
-                        flag = 0;
-                    }
-                }
+          //      int flag = 0;
+//                for (int j = 0; j < sizeX; j++) {
+//                    if (lines[j][0] == lines[i][2]) {
+//                        if (lines[j][1] == "WORD") {
+//                            flag = 3;
+//                        } else if (lines[j][1] == "BYTE") {
+//                            flag = getLength(lines[j][2]);
+//                        }
+//                    } else {
+//                        flag = 0;
+//                    }
+//                }
 
-                AddressCode += flag;
+                AddressCode += 3;
 
             } else if (op == "ADDR" || op == "MULR" || op == "DIVR" || op == "SUBR" || op == "COMPR") {
-                int flagtwo = 0;
-                for (int l = 0; l < sizeX; l++) {
-                    if (lines[l][0] == lines[i][2]) {
-                        if (lines[l][1] == "WORD") {
-                            flagtwo = 3;
-                        } else if (lines[l][1] == "BYTE") {
-                            flagtwo = getLength(lines[l][2]);
-                        }
-                    } else {
-                        flagtwo = 0;
-                    }
-                    AddressCode += (flagtwo * 2);
 
-                }
 
                 /////
+                                AddressCode += 2;
+            }else if (op == "J" || op == "JSUB" || op == "JEQ" || op == "JGT" || op == "JLT"){
+                                            AddressCode += 2;
+
+
+            }else if (op == "LDA" || op == "LDB" || op == "LDCH" || op == "LDF" || op == "LDS"|| op == "LDL"|| op == "LDT"|| op == "LDX"){
+                                            AddressCode += 3;
+
+
+            }else if (op == "STB" || op == "STCH" || op == "STF" || op == "STI" || op == "STL"|| op == "STA" || op == "STSW" || op == "STT" || op == "STX  "){
+
+                                            AddressCode += 3;
+
             }
         }
         // cout<<AddressCode<<endl;
@@ -648,4 +648,3 @@ char *tocharArray(string x) {
     return *c;
 
 }
-
