@@ -415,7 +415,7 @@ void fileLoader(std::string path,std::map<int,std::string[3]> lines) {
     int index = 0;
     while (std::getline(file, line)) {
         if (line.size() == 0 || line.find(".") != -1) {
-            continue;
+            CommentLine [index]=line;
         } else {
             int pos, j =2;
             for (int i = 0; i < 3; ++i) {
@@ -443,6 +443,7 @@ int main()
 {
     std::map<int,std::string[3]> lines;
     std::map<int, std::string> error_messages;
+    std::map<int, std::string> CommentLine;
     fileLoader("/home/belal/CLionProjects/pass1/keys.txt",lines);
     //check_variables(11,lines,error_messages);
 	string s = "";
@@ -559,6 +560,7 @@ temp.append(result);
 
 }
 	std::map<int,std::string>::iterator it;
+    int commentCounter = 0 ;
 	for (int i = 0 ; i < addressCode.size() ; i++ ){
 		std::cout.width(20); std::cout << std::left << i+1 ;
 		std::cout.width(20); std::cout << std::left << addressCode.at(i) ;
@@ -566,15 +568,16 @@ temp.append(result);
 		if (it == CommentLine.end()){
 			for (int j = 0 ; j < 3 ; j++)
 			{
-				std::cout.width(20); std::cout << std::left << lines.at(i)[j] ;
+				std::cout.width(20); std::cout << std::left << lines.at(i - commentCounter)[j] ;
 			}
 		} else{
+		    commentCounter++ ;
 			std::cout << CommentLine.at(i) ;
 		}
-		it = error_messages.find(i);
+		it = error_messages.find(i - commentCounter);
 		if (it != error_messages.end()){
 			std::cout <<'\n' ;
-			std::cout.width(50); std::cout << std::right << error_messages.at(i) ;
+			std::cout.width(50); std::cout << std::right << error_messages.at(i - commentCounter) ;
 		}
 		std::cout <<'\n' ;
 	}
