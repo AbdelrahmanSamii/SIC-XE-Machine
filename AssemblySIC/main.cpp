@@ -16,12 +16,10 @@
 #define noUnderline "\033[0m"
 using namespace std;
 
-char *tocharArray(string x);
 
-//int getValue (string x, string y[max_fixed_size][max_fixed_size]);
 int getSize(string x);
 
-int getValue(string x);
+string getHexadeciaml(int AddressCode);
 
 int getLength(string x);
 
@@ -114,6 +112,32 @@ string MyClass::toUpperStringV(string str) {
 }
 
 void MyClass::checkparameters(int index, string *err, int i) {
+
+    if(mlines->at(index)[2][0] == '#'||mlines->at(index)[2][0] == '@'){
+        if(mlines->at(index)[2][1]-48>=0&&mlines->at(index)[2][1]-48<=9){
+            for(int i=1;i<mlines->at(index)[2].size();i++){
+                if(!(mlines->at(index)[2][i]-48>=0&&mlines->at(index)[2][i]-48<=9)){
+                    err->append("\ invalid parameter\n");
+                    return;
+                }
+            }
+
+            return ;
+        }
+        string sss = mlines->at(index)[2].substr(1,mlines->at(index)[2].size());
+        bool xx = false;
+        for(int i =0 ; i<labels.size();i++){
+            if(labels[i].name.compare(sss)==0&&labels[i].isStorage){
+                xx=true;
+            }
+
+        }
+        if(!xx){
+            err->append("\ invalid label\n");
+
+        }
+        return;
+    }
     string parameters[2];
     int numOfparameters = 2;
     int commaIndex = -1;
@@ -129,6 +153,17 @@ void MyClass::checkparameters(int index, string *err, int i) {
         parameters[1] = mlines->at(index)[2].substr(commaIndex + 1, s - commaIndex - 1);
     }
 
+
+    if (o[i].name.compare("LDCH") == 0 || o[i].name.compare("STCH") == 0|| o[i].name.compare("ST")==0|| o[i].name.compare("LD")==0) {
+        if (numOfparameters == 2) {
+            string ds ="X";
+            if (ds.compare(parameters[1]) != 0) {
+                err->append("\"" + mlines->at(index)[1] + "\" requires register X as second parameter and found \"" + parameters[1] + "\" instead\n");
+            }
+            numOfparameters = 1;
+            parameters[1] = "";
+        }
+    }
 
     if (o[i].parametersNumber == numOfparameters) {
         if (o[i].isregisterparameters) {  // parameters must be registers
@@ -201,18 +236,31 @@ void MyClass::operate(map<int, string[3]> *lines, map<int, string> *error_messag
 
 
 void MyClass::checkOperation(int index, string *err) {
+    bool f4=false;
+    if(mlines->at(index)[1][0]=='+'){
+        f4=true;
+        mlines->at(index)[1]=mlines->at(index)[1].substr(1,mlines->at(index)[1].size());
+    }
+
+
     if ((mlines->at(index)[1]).compare("START") == 0 || (mlines->at(index)[1]).compare("END") == 0) {
+        if(f4){
+            mlines->at(index)[1] = '+'+mlines->at(index)[1];
+        }
         return;
     }
 
     for (int i = 0; i < opsSize; i++) {
-//nasser
+
         // op op
         if (o[i].R) {                   // if must got registerappended
             for (int j = 0; j < regSize; j++) {
                 if ((o[i].name + registers[j]).compare(mlines->at(index)[1]) == 0) {
                     //check parameters with true R
                     checkparameters(index, err, i);
+                    if(f4){
+                        mlines->at(index)[1] = '+'+mlines->at(index)[1];
+                    }
                     return;
                 }
             }
@@ -228,13 +276,18 @@ void MyClass::checkOperation(int index, string *err) {
                         string flag = storage.substr(0, 1);
 
                         if (flag == "C" || flag == "X") {
+                            if(f4){
+                                mlines->at(index)[1] = '+'+mlines->at(index)[1];
+                            }
                             return;
                         }
                     } else if (mlines->at(index)[1] == "WORD") {
                         int temp = 0;
                         std::istringstream(mlines->at(index)[2]) >> temp;
                         if (temp == (int) temp) {
-
+                            if(f4){
+                                mlines->at(index)[1] = '+'+mlines->at(index)[1];
+                            }
                             return;
                         }
 
@@ -244,11 +297,18 @@ void MyClass::checkOperation(int index, string *err) {
             } else { //non storage
                 checkparameters(index, err, i);
             }
+            if(f4){
+                mlines->at(index)[1] = '+'+mlines->at(index)[1];
+            }
             return;
         }
         if (i == opsSize - 1) {
             err->append("undefiend or unsupported operation \"" + mlines->at(index)[1] + "\" \n");
         }
+
+    }
+    if(f4){
+        mlines->at(index)[1] = '+'+mlines->at(index)[1];
     }
 }
 
@@ -258,6 +318,9 @@ void MyClass::checkLabel(int index, string *err) {
     if (mlines->at(index)[0] != "") {
         label lbl;
         lbl.name = mlines->at(index)[0];
+        if(!(lbl.name[0]<='Z'&&lbl.name[0]>='A')){
+            err->append("The name of the label must start with character  \n");
+        }
         lbl.index = index;
         if (mlines->at(index)[1] == "RESW" || mlines->at(index)[1] == "RESB" || mlines->at(index)[1] == "WORD" ||
             mlines->at(index)[1] == "BYTE") {
@@ -268,7 +331,7 @@ void MyClass::checkLabel(int index, string *err) {
         labels[labels.size()] = lbl;
         for (int i = index - 1; i >= 0; i--) {
             if (mlines->at(i)[0] == mlines->at(index)[0]) {
-                err->append("Label \"" + mlines->at(index)[0] + "\" is defined in line \n");
+                err->append("Label \"" + mlines->at(index)[0] + "\" is defined in some line before\n");
             }
         }
 
@@ -297,6 +360,7 @@ void MyClass::setKeyWords() {
 
 
     int i = 0;
+
     o[i] = operation("ADD", 2, false, false, 1, false);
     i++;
 
@@ -339,9 +403,13 @@ void MyClass::setKeyWords() {
 
     o[i] = eqOperation;
     i++;
-    operation gtOperation = operation("JGT", 2, false, false, 1, false);
+    operation gtOperation = operation("J", 2, false, false, 1, false);
     gtOperation.jumpOperation = true;
     o[i] = gtOperation;
+    i++;
+    operation gtOperation1 = operation("JGT", 2, false, false, 1, false);
+    gtOperation1.jumpOperation = true;
+    o[i] = gtOperation1;
     i++;
 
     operation ltOperation = operation("JLT", 2, false, false, 1, false);
@@ -362,10 +430,10 @@ void MyClass::setKeyWords() {
     i++;
 
 
-    o[i] = operation("LDCH", 2, false, false, 1, false);
+    o[i] = operation("LDCH", 1, false, false, 1, false);
     i++;
 
-    o[i] = operation("STCH", 2, false, false, 1, false);
+    o[i] = operation("STCH", 1, false, false, 1, false);
     i++;
 
 
@@ -427,7 +495,6 @@ rr fileLoader(std::string path, std::map<int, std::string[3]> lines, std::map<in
     int g = 0 ;
     while (std::getline(file, line)) {
         if (line.size() == 0 || line.find(".") != -1) {
-
             CommentLine[index + g] = line;
             g++;
             continue;
@@ -452,175 +519,219 @@ rr fileLoader(std::string path, std::map<int, std::string[3]> lines, std::map<in
     rr maps;
     maps.lines = lines;
     maps.commentLine = CommentLine;
-    cout<<"size before"<<lines.size();
     return maps;
-
-//    check_variables(11, lines, error_messages);
 }
 
 
 int main() {
+
+    string pathOfFile;
+    cout << "Please Enter filePath: ";
+    getline(cin, pathOfFile);
+    cout << endl;
+
     std::map<int, std::string[3]> lines;
     std::map<int, std::string> error_messages;
     std::map<int, std::string> CommentLine;
-    rr maps = fileLoader("/home/sami/CLionProjects/untitled4/mytest.txt", lines, CommentLine);
+    rr maps = fileLoader(pathOfFile, lines, CommentLine);
 
     lines = maps.lines;
     CommentLine = maps.commentLine;
 
-    cout<<"size after"<<lines.size();
-
-    //check_variables(11,lines,error_messages);
     string s = "";
-    //map<int, string[3]> lines;
     map<int, string> errs;
-    /*   int i = 0;
-       while (s != "m") {
-           cout << i + "             label:";
-           cin >> s;
-           lines[i][0] = s;
-           cout << i + "            operation:";
-           cin >> s;
-           lines[i][1] = s;
-           cout << i + "              parameter:";
-           cin >> s;
-           lines[i][2] = s;
-           cout << "enter \"show\" if show ?";
-           cin >> s;
-           i++;
-       }*/
+
     MyClass cls;
     cls.operate(&lines, &error_messages);
 
-    //  cin >> s;
-     //  string x [8][3]= {{"Prbn01","START","1000"},{"0","LDA","BETA"},{"0","MUL","GAMMA"},{"0","STA","ALPHA"},{"ALPHA","RESW","1"},{"BETA","WORD","25"},{"GAMMA","WORD","4"},{"0","END","Prbn01"}};
     int sizeX = lines.size();
-  //  int sizeY = 3;
+    int sizeY = CommentLine.size();
+    cout<<"size"<<sizeX<<endl;
     int AddressCode = 0;
     std::map<int, std::string> addressCode;
-    for (int i = 0; i < sizeX; i++) {
-        if (error_messages[i] == "") {
-            string op = lines[i][1];
-            cout<<"operation"<<op;
-            if (op == "START") {
-                string temp = lines[i][2];
-                if (temp.size() > 4) {
-                    char *ctemp = tocharArray(lines[0][2]);
-                    AddressCode = strtoul(ctemp, NULL, 16);
+    for(int j=0;j<sizeX;j++){
+        if(lines[j][1]=="START"){
+            string temp = lines[j][2];
+            AddressCode = strtoul(temp.c_str(), NULL, 16);
+        }
+    }
+int commentflag=0;
+    for (int i = 0; i < sizeX+sizeY; i++) {
+        if(CommentLine[i]==""){
+            string op =lines[i-commentflag][1];
+            if(op!="END") {
+                addressCode[i].append(getHexadeciaml(AddressCode));
 
-                } else {
-                    std::istringstream(lines[i][2]) >> AddressCode;
-                }
-            } else if (op == "BYTE" || op == "WORD") {
-                if (op == "BYTE") {
-                    AddressCode += getLength(lines[i][2]);
-                } else {
+              //  cout<<"Not a comment and op is " <<op<<endl;
+                if (op == "BYTE" || op == "WORD") {
+                    if (op == "BYTE") {
+                        AddressCode += getLength(lines[i-commentflag][2]);
+                    } else {
+                        AddressCode += 3;
+                    }
+
+                } else if (op == "RESW" || op == "RESB") {
+                    int number = getSize(lines[i-commentflag][2]);
+                    if (op == "RESB") {
+                        AddressCode += number;
+                    } else {
+                        AddressCode += (3 * number);
+                    }
+
+                } else if (op == "ADD" || op == "MUL" || op == "DIV" || op == "SUB" || op == "COMP") {
+
                     AddressCode += 3;
+
+                } else if (op == "ADDR" || op == "MULR" || op == "DIVR" || op == "SUBR" || op == "COMPR") {
+                    AddressCode += 2;
+                }else if (op == "J" || op == "JSUB" || op == "JEQ" || op == "JGT" || op == "JLT"){
+                    AddressCode += 3;
+
+
+                }else if (op == "LDA" || op == "LDB" || op == "LDCH" || op == "LDF" || op == "LDS"|| op == "LDL"|| op == "LDT"|| op == "LDX"){
+                    AddressCode += 3;
+
+
+                }else if (op == "STB" || op == "STCH" || op == "STF" || op == "STI" || op == "STL"|| op == "STA" || op == "STSW" || op == "STT" || op == "STX  "){
+
+                    AddressCode += 3;
+
+                }
+                    //////////////////////////
+                else if (op == "+ADD" || op == "+MUL" || op == "+DIV" || op == "+SUB" || op == "+COMP") {
+
+                    AddressCode += 4;
+
+                } else if (op == "+ADDR" || op == "+MULR" || op == "+DIVR" || op == "+SUBR" || op == "+COMPR") {
+                    AddressCode += 2;
+                }else if (op == "+J" || op == "+JSUB" || op == "+JEQ" || op == "+JGT" || op == "+JLT"){
+                    AddressCode += 4;
+
+
+                }else if (op == "+LDA" || op == "+LDB" || op == "+LDCH" || op == "+LDF" || op == "+LDS"|| op == "+LDL"|| op == "+LDT"|| op == "+LDX"){
+                    AddressCode += 4;
+
+
+                }else if (op == "+STB" || op == "+STCH" || op == "+STF" || op == "+STI" || op == "+STL"|| op == "+STA" || op == "+STSW" || op == "+STT" || op == "STX  "){
+
+                    AddressCode += 4;
+
                 }
 
-            } else if (op == "RESW" || op == "RESB") {
-                int number = getSize(lines[i][2]);
-                if (op == "RESB") {
-                    AddressCode += number;
-                } else {
-                    AddressCode += (3 * number);
-                }
+            }else{
 
-            } else if (op == "END") {
-
-            } else if (op == "ADD" || op == "MUL" || op == "DIV" || op == "SUB" || op == "COMP") {
-          //      int flag = 0;
-//                for (int j = 0; j < sizeX; j++) {
-//                    if (lines[j][0] == lines[i][2]) {
-//                        if (lines[j][1] == "WORD") {
-//                            flag = 3;
-//                        } else if (lines[j][1] == "BYTE") {
-//                            flag = getLength(lines[j][2]);
-//                        }
-//                    } else {
-//                        flag = 0;
-//                    }
-//                }
-
-                AddressCode += 3;
-
-            } else if (op == "ADDR" || op == "MULR" || op == "DIVR" || op == "SUBR" || op == "COMPR") {
-
-
-                /////
-                                AddressCode += 2;
-            }else if (op == "J" || op == "JSUB" || op == "JEQ" || op == "JGT" || op == "JLT"){
-                                            AddressCode += 2;
-
-
-            }else if (op == "LDA" || op == "LDB" || op == "LDCH" || op == "LDF" || op == "LDS"|| op == "LDL"|| op == "LDT"|| op == "LDX"){
-                                            AddressCode += 3;
-
-
-            }else if (op == "STB" || op == "STCH" || op == "STF" || op == "STI" || op == "STL"|| op == "STA" || op == "STSW" || op == "STT" || op == "STX  "){
-
-                                            AddressCode += 3;
-
+                addressCode[i].append(getHexadeciaml(AddressCode));
+            //    cout<<"Not a comment and opEND is " <<op<<endl;
             }
+        }else{
+addressCode[i].append(getHexadeciaml(AddressCode));
+commentflag++;
         }
-        // cout<<AddressCode<<endl;
-        std::stringstream stream;
-        stream << std::hex << AddressCode;
-        std::string result(stream.str());
-        std::string temp = "";
-        std::string finalCode = "00000000";
-        for (int i = 0; i < (8 - result.size()); i++) {
-            temp.append("0");
-        }
-        temp.append(result);
-        for (int i = 0; i < sizeX; i++) {
-            finalCode[i] = toupper(temp[i]);
-        }
-        addressCode[i].append(finalCode);
+
 
     }
+cout<<"addresscode size"<<addressCode.size()<<endl;
+    int counter=0;
+    for(int i=0;i<addressCode.size();i++){
 
-    for (int i = 0; i < addressCode.size(); i++){
-        cout << addressCode[i] << endl;
+        if(CommentLine[i]!=""){
+            cout<<CommentLine[i]<<endl;
+            cout<<"address "<<(i+1)<<"  "<<addressCode[i]<<endl;
+            counter++;
+
+        }else{
+            AddressCode = strtoul(addressCode[i].c_str(), NULL, 16);
+            cout<<AddressCode<<"  "<<lines[i-counter][1]<<endl;
+            cout<<"address "<<(i+1)<<"  "<<addressCode[i]<<endl;
+           // cout<<i<< " "<<lines[i][0]<<" "<<lines[i][1]<<"  "<<lines[i][2]<<endl;
+        }
     }
 
+//v
     std::map<int, std::string>::iterator it;
-    std::cout <<underline<< "Output" << std::endl;
-    std::cout << noUnderline<<"Line no.            Adress              Label               Mnemonic            Operands"<< std::endl;
+   /* std::cout << "Line no.            Adress              Label               Mnemonic            Operands"<< std::endl;
     std::cout << "                                                            Op-code"<< std::endl ;
     int commentCounter = 0;
-    for (int i = 0; i < addressCode.size() + commentCounter; i++) {
-        std::cout.width(20);
-        std::cout << std::left << i + 1;
-        std::cout.width(20);
-        std::cout << std::left << addressCode.at(i);
-        it = CommentLine.find(i);
+    int index = 0 ;
+    int symbleTable[addressCode.size()] ;
+
+    for (int i = 0; i < addressCode.size() ; i++) {
+        if ((lines.at(i)[1] == "WORD" ||lines.at(i)[1] == "BYTE" || lines.at(i)[1] == "RESB" || lines.at(i)[1] == "RESW") && lines.at(i)[1] != "+SUB"){
+            symbleTable[i] = 10 ;
+        }
+
+        it = CommentLine.find(i + commentCounter);
         if (it == CommentLine.end()) {
+            std::cout.width(20);
+            std::cout << std::left << i + 1 + index;
+            std::cout.width(20);
+            std::cout << std::left << addressCode.at(i);
             for (int j = 0; j < 3; j++) {
                 std::cout.width(20);
-                std::cout << std::left << lines.at(i - commentCounter)[j];
+                std::cout << std::left << lines.at(i)[j];
             }
-        } else {
-            commentCounter++;
-            std::cout << std::left << addressCode.at(i-1);
-            std::cout << CommentLine.at(i);
-        }
-        it = error_messages.find(i - commentCounter);
-        if (it != error_messages.end()) {
             std::cout << '\n';
-            std::cout.width(50);
-            std::cout << std::right << error_messages.at(i - commentCounter);
         }
-        std::cout << '\n';
-    }
-    cout << "sami";
+        else {
+            std::cout.width(20);
+            std::cout << std::left << i + 1 + index ;
+            std::cout.width(20);
+            if (i == 0){
+                std::cout << std::left << addressCode.at(i);
+                std::cout << CommentLine.at(i + commentCounter);
+            }
+            else{
+               std::cout << std::left << addressCode.at(i);
+                std::cout << CommentLine.at(i + commentCounter);
 
+            }
+
+            std::cout << '\n';
+
+            std::cout.width(20);
+            std::cout << std::left << i + 2 + index;
+            std::cout.width(20);
+            std::cout << std::left << addressCode.at(i);
+            for (int j = 0; j < 3; j++) {
+                std::cout.width(20);
+                std::cout << std::left << lines.at(i)[j];
+            }
+            commentCounter++;
+            index++;
+            std::cout << '\n';
+        }
+
+
+        it = error_messages.find(i );
+        if (it != error_messages.end()) {
+            if (error_messages.at(i) != "" ){
+                std::cout.width(70);
+                std::cout << std::right << error_messages.at(i );
+            }
+        }
+    }
+
+    std::cout << "symbol table" <<endl;
+    for (int i = 1 ; i < addressCode.size() ; i++ ){
+        if (symbleTable[i] == 10 )
+        {
+            if (lines.at(i)[1] == "WORD" ||lines.at(i)[1] == "BYTE" || lines.at(i)[1] == "RESB" || lines.at(i)[1] == "RESW")
+            {
+                std::cout.width(20);
+                std::cout << std::left << addressCode.at(i);
+                std::cout << std::left << lines.at(i)[0];
+                std::cout << '\n';
+
+            }
+
+        }
+    }
+*/
     return 0;
 }
 
 int getLength(string x) {
-    string y = x.substr(2, x.size() - 2);
-
+    string y = x.substr(2, x.size() - 3);
     return y.size();
 
 }
@@ -631,29 +742,22 @@ int getSize(string x) {
     return temp;
 }
 
-//int getValue (string x, string y[max_fixed_size][max_fixed_size]){
-//
-//for(int i=0;i<sizeof(y)/sizeof(y[0]);i++){
-//      if(y[i][0]==x){
-//        if(y[i][1]=="WORD"){
-//    return 3;
-//}else if (y[i][1] =="BYTE"){
-// return getLength(y[i][2]);
-//}
-//      } else {
-//      return 0;
-//      }
-//}
-//}
 
-char *tocharArray(string x) {
+    string getHexadeciaml(int AddressCode){
+        std::stringstream stream;
+        stream << std::hex << AddressCode;
+        std::string result(stream.str());
+        std::string red = "";
+        std::string finalCode = "00000000";
+        for (int i = 0; i < (8 - result.size()); i++) {
+            red.append("0");
+        }
+        red.append(result);
+        int size = red.size();
+        for (int i = 0; i < size; i++) {
+            finalCode[i] = toupper(red[i]);
+        }
 
-    int n = x.length() + 1;
-    char *c[n];
-    for (int i = 0; i < x.length(); ++i) {
-        *c[i] = x[i];
+        return finalCode;
     }
-    return *c;
-
-}
 
