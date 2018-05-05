@@ -10,6 +10,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <stdlib.h>
+#include <regex>
 
 #define max_fixed_size 100
 #define underline "\033[4m"
@@ -525,10 +526,10 @@ rr fileLoader(std::string path, std::map<int, std::string[3]> lines, std::map<in
 
 int main() {
 
-    string pathOfFile;
-    cout << "Please Enter filePath: ";
-    getline(cin, pathOfFile);
-    cout << endl;
+    string pathOfFile= "C:\\Users\\Ahmed\\Desktop\\Phase_1_Tests\\7.asm";
+  //  cout << "Please Enter filePath: ";
+   // getline(cin, pathOfFile);
+    //cout << endl;
 
     std::map<int, std::string[3]> lines;
     std::map<int, std::string> error_messages;
@@ -578,13 +579,19 @@ int commentflag=0;
                         AddressCode += (3 * number);
                     }
 
+                }else if (op=="RSUB"||lines[i][0]=="RSUB"||lines[i][2]=="RSUB"){
+                    AddressCode+=3;
+
                 } else if (op == "ADD" || op == "MUL" || op == "DIV" || op == "SUB" || op == "COMP") {
 
                     AddressCode += 3;
 
-                } else if (op == "ADDR" || op == "MULR" || op == "DIVR" || op == "SUBR" || op == "COMPR") {
+                }else if (op == "TD" || op == "WD" || op == "RD" ){
+                    AddressCode += 3;
+
+                } else if (op == "ADDR" || op == "MULR" || op == "DIVR" || op == "SUBR" || op == "COMPR"||op=="CLEAR"||op=="TIXR") {
                     AddressCode += 2;
-                }else if (op == "J" || op == "JSUB" || op == "JEQ" || op == "JGT" || op == "JLT"){
+                }else if (op == "J" || op == "JSUB" || op == "JEQ" || op == "JGT" || op == "JLT"||op=="RSUB"||op=="TIX"){
                     AddressCode += 3;
 
 
@@ -604,7 +611,10 @@ int commentflag=0;
 
                 } else if (op == "+ADDR" || op == "+MULR" || op == "+DIVR" || op == "+SUBR" || op == "+COMPR") {
                     AddressCode += 2;
-                }else if (op == "+J" || op == "+JSUB" || op == "+JEQ" || op == "+JGT" || op == "+JLT"){
+                }else if (op=="+RSUB"||lines[i][0]=="+RSUB"||lines[i][2]=="+RSUB"){
+                    AddressCode+=4;
+
+                }else if (op == "+J" || op == "+JSUB" || op == "+JEQ" || op == "+JGT" || op == "+JLT"||op=="+RSUB"||op=="+TIX"){
                     AddressCode += 4;
 
 
@@ -614,6 +624,9 @@ int commentflag=0;
 
                 }else if (op == "+STB" || op == "+STCH" || op == "+STF" || op == "+STI" || op == "+STL"|| op == "+STA" || op == "+STSW" || op == "+STT" || op == "STX  "){
 
+                    AddressCode += 4;
+
+                }else if (op == "+TD" || op == "+WD" || op == "+RD" ){
                     AddressCode += 4;
 
                 }
@@ -635,14 +648,20 @@ cout<<"addresscode size"<<addressCode.size()<<endl;
     for(int i=0;i<addressCode.size();i++){
 
         if(CommentLine[i]!=""){
-            cout<<CommentLine[i]<<endl;
-            cout<<"address "<<(i+1)<<"  "<<addressCode[i]<<endl;
+           // cout<<CommentLine[i]<<endl;
+            cout<<"  "<<addressCode[i]<<"comment "<<endl;
             counter++;
 
         }else{
             AddressCode = strtoul(addressCode[i].c_str(), NULL, 16);
-            cout<<AddressCode<<"  "<<lines[i-counter][1]<<endl;
-            cout<<"address "<<(i+1)<<"  "<<addressCode[i]<<endl;
+            if(lines[i-counter][2]=="RSUB"){
+                cout<<addressCode[i]<<"  "<<"RSUB"<<endl;
+
+            }else{
+                cout<<addressCode[i]<<"  "<<lines[i-counter][1]<<endl;
+
+            }
+          //  cout<<"address "<<(i+1)<<"  "<<addressCode[i]<<endl;
            // cout<<i<< " "<<lines[i][0]<<" "<<lines[i][1]<<"  "<<lines[i][2]<<endl;
         }
     }
@@ -731,8 +750,20 @@ cout<<"addresscode size"<<addressCode.size()<<endl;
 }
 
 int getLength(string x) {
+    //cout<<"internal"<<x.size()<<x<<endl;
+    x = std::regex_replace(x, std::regex("\\s"), "");
     string y = x.substr(2, x.size() - 3);
-    return y.size();
+   // cout<<"internal"<<x.size()<<x.at(0)<<endl;
+    if(x.at(0)=='C'){
+        return y.size();
+
+    }else if (x.at(0)=='X'){
+        return 1;
+
+    } else{
+        return 1;
+
+    }
 
 }
 
