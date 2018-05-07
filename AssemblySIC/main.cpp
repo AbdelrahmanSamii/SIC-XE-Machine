@@ -433,10 +433,14 @@ void MyClass::setKeyWords() {
     o[i] = ltOperation;
     i++;
 
-    o[i] = operation("JSUB", 2, false, false, 1, false);
+    operation t1 = operation("JSUB", 2, false, false, 1, false);
+    t1.jumpOperation=true;
+    o[i]=t1;
     i++;
 
-    o[i] = operation("RSUB", 2, false, false, 0, false);
+     operation t2 = operation("RSUB", 2, false, false, 0, false);
+    t2.jumpOperation=true;
+    o[i]=t2;
     i++;
 
     o[i] = operation("LD", 2, true, false, 1, false);
