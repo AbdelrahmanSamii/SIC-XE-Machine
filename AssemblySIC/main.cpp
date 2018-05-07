@@ -165,6 +165,20 @@ void MyClass::checkparameters(int index, string *err, int i) {
             parameters[1] = "";
         }
     }
+	if (o[i].name.compare("SHIFTL") == 0 || o[i].name.compare("SHIFTR") == 0) {
+		if (numOfparameters != 2) {
+			err->append("wrong number of parameters for operation  \"" + mlines->at(index)[1] + "\" \n");
+			return;
+		}
+		numOfparameters = 1;
+		for (int n = 0; n < parameters[1].length(); n++) {
+			if (parameters[1][n] > 9 || parameters[1][n] < 0) {
+				err->append("second parameter of shift must be +ve integer \n");
+			}
+		}
+
+	}
+
 
     if (o[i].parametersNumber == numOfparameters) {
         if (o[i].isregisterparameters) {  // parameters must be registers
@@ -181,12 +195,11 @@ void MyClass::checkparameters(int index, string *err, int i) {
                 }
             }
         } else { // parameters must be non registers and defiend  in labels or jumb
-            bool nonReg = false;
             for (int p = 0; p < numOfparameters; p++) {
 
-                if (parameters[p] != "") {
+                if (parameters[p].compare("")!=0) {
                     for (int l = 0; l < labels.size(); l++) {
-                        if (parameters[p] == labels[l].name) {
+                        if (parameters[p].compare( labels[l].name)==0) {
                             if (o[i].jumpOperation) {      // if jumb operation
                                 if (labels[l].isStorage) {
                                     err->append("the operation requires non storage directive parameter found:  \"" +
@@ -200,10 +213,10 @@ void MyClass::checkparameters(int index, string *err, int i) {
 
                         }
                     }
-                    if (!nonReg) {
+
                         err->append("the operation\"" + mlines->at(index)[1] +
                                     "\" requires storage directive parameter found:  \"" + parameters[p] + "\" \n");
-                    }
+
                 }
             }
         }
@@ -472,6 +485,22 @@ void MyClass::setKeyWords() {
     o[i] = operation("START", 2, false, false, 1, false);
     i++;
     o[i] = operation("END", 2, false, false, 1, false);
+	i++;
+	o[i] = operation("CLEAR", 2, false, false, 1, true);
+	i++;
+	o[i] = operation("BASE", 2, false, false, 1, false);
+	i++;
+	o[i] = operation("NOBASE", 2, false, false, 1, false);
+	i++;
+	o[i] = operation("SHIFTL", 2, false, false, 1, true);
+	i++;
+	o[i] = operation("SHIFTR", 2, false, false, 1, true);
+	i++;
+	o[i] = operation("OR", 2, false, false, 1, false);
+	i++;
+	o[i] = operation("AND", 2, false, false, 1, false);
+	i++;
+	o[i] = operation("NORM", 2, false, false, 0, false);
 
 }
 
